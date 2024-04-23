@@ -1,1 +1,0 @@
-/usr/bin/cc CMakeFiles/Tictoc.dir/src/main.c.o -o Tictoc  /usr/lib/libSDL2main.a /usr/lib/libSDL2-2.0.so.0.3000.0 /usr/lib/libSDL2_ttf.so 
