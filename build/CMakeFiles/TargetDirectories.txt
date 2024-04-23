@@ -1,0 +1,3 @@
+/home/bronx/programming/projects/tiktak/build/CMakeFiles/Tictoc.dir
+/home/bronx/programming/projects/tiktak/build/CMakeFiles/edit_cache.dir
+/home/bronx/programming/projects/tiktak/build/CMakeFiles/rebuild_cache.dir
