@@ -2,7 +2,6 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <SDL2/SDL_ttf.h>
-/* #include <SDL2_gfxPrimitives.h> */ 
 #include <stdlib.h>
 
 #define WINDOW_WIDTH 800
@@ -203,89 +202,91 @@ void draw_circle(SDL_Renderer* renderer, int x, int y, int radius) {
 }
 
 void render_player_turn(SDL_Renderer *renderer, const char *player) {
+    // Open the font with a suitable font size
+    TTF_Font* Noto = TTF_OpenFont(font_path, 48); // Choose a suitable font size (e.g., 16)
+    if (!Noto) {
+        printf("Failed to load font: %s\n", TTF_GetError());
+        return;
+    }
 
+    // Define the color for the text
+    SDL_Color White = {255, 255, 255, 255}; // Full white
 
+    // Render the text using anti-aliasing (blended rendering) for better quality
+    SDL_Surface* surfaceMessage = TTF_RenderText_Blended(Noto, player, White);
+    if (!surfaceMessage) {
+        printf("Failed to render text: %s\n", TTF_GetError());
+        TTF_CloseFont(Noto);
+        return;
+    }
 
-TTF_Font* Noto = TTF_OpenFont(font_path, 5);
-	if (!Noto) {
-			printf("Failed to load font: %s\n", TTF_GetError());
-			return;
-	}
+    // Create a texture from the rendered surface
+    SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
+    if (!Message) {
+        printf("Failed to create texture: %s\n", SDL_GetError());
+        SDL_FreeSurface(surfaceMessage);
+        TTF_CloseFont(Noto);
+        return;
+    }
 
-	SDL_Color White = {255, 255, 255};
-	SDL_Surface* surfaceMessage = TTF_RenderText_Solid(Noto, player , White);
-	if (!surfaceMessage) {
-			printf("Failed to render text: %s\n", TTF_GetError());
-			TTF_CloseFont(Noto);
-			return;
-	}
+    // Define the rectangle for rendering the text
+    SDL_Rect Message_rect;
+    Message_rect.x = WINDOW_WIDTH / 2 - surfaceMessage->w / 2; // Center the text horizontally
+    Message_rect.y = 0; // Position at the top of the screen
+    Message_rect.w = surfaceMessage->w; // Width of the text surface
+    Message_rect.h = surfaceMessage->h; // Height of the text surface
 
-	SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
-	if (!Message) {
-			printf("Failed to create texture: %s\n", SDL_GetError());
-			SDL_FreeSurface(surfaceMessage);
-			TTF_CloseFont(Noto);
-			return;
-	}
+    // Render the text on the screen
+    SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
 
-	SDL_Rect Message_rect; //create a rect
-	Message_rect.x = WINDOW_WIDTH / 2;  //controls the rect's x coordinate 
-	Message_rect.y = 0; // controls the rect's y coordinte
-	Message_rect.w = 100; // controls the width of the rect
-	Message_rect.h = 100;
-
-	SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
-
-	SDL_FreeSurface(surfaceMessage);
-	SDL_DestroyTexture(Message);
-	TTF_CloseFont(Noto);
-
+    // Clean up resources
+    SDL_FreeSurface(surfaceMessage);
+    SDL_DestroyTexture(Message);
+    TTF_CloseFont(Noto);
 }
 
-void show_score(SDL_Renderer *renderer, char *player, int playerScore, int x, int y) {
+void show_score(SDL_Renderer *renderer, const char *player, int playerScore, int x, int y) {
+    char scoreText[50];
 
+    // Use snprintf instead of sprintf to format the score string
+    snprintf(scoreText, sizeof(scoreText), "%s: %d", player, playerScore);
 
+    TTF_Font* Noto = TTF_OpenFont(font_path, 32);
+    if (!Noto) {
+        printf("Failed to load font: %s\n", TTF_GetError());
+        return;
+    }
 
- char scoreText[50];
+    SDL_Color White = {255, 255, 255};
+    SDL_Surface* surfaceMessage = TTF_RenderText_Solid(Noto, scoreText, White);
+    if (!surfaceMessage) {
+        printf("Failed to render text: %s\n", TTF_GetError());
+        TTF_CloseFont(Noto);
+        return;
+    }
 
-    // Use sprintf to format the score string
-    sprintf(scoreText, "%c: %d", player, playerScore);
+    SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
+    if (!Message) {
+        printf("Failed to create texture: %s\n", SDL_GetError());
+        SDL_FreeSurface(surfaceMessage);
+        TTF_CloseFont(Noto);
+        return;
+    }
 
-	TTF_Font* Noto = TTF_OpenFont(font_path, 10);
-	if (!Noto) {
-			printf("Failed to load font: %s\n", TTF_GetError());
-			return;
-	}
+    // Define the rectangle for rendering the text
+    SDL_Rect Message_rect;
+    Message_rect.x = x; // x-coordinate
+    Message_rect.y = y; // y-coordinate
+    Message_rect.w = surfaceMessage->w; // width of the text surface
+    Message_rect.h = surfaceMessage->h; // height of the text surface
 
-	SDL_Color White = {255, 255, 255};
-	SDL_Surface* surfaceMessage = TTF_RenderText_Solid(Noto, scoreText, White);
-	if (!surfaceMessage) {
-			printf("Failed to render text: %s\n", TTF_GetError());
-			TTF_CloseFont(Noto);
-			return;
-	}
+    // Render the text on the screen
+    SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
 
-	SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
-	if (!Message) {
-			printf("Failed to create texture: %s\n", SDL_GetError());
-			SDL_FreeSurface(surfaceMessage);
-			TTF_CloseFont(Noto);
-			return;
-	}
-
-	SDL_Rect Message_rect; //create a rect
-	Message_rect.x = x;  //controls the rect's x coordinate 
-	Message_rect.y = y; // controls the rect's y coordinte
-	Message_rect.w = 100; // controls the width of the rect
-	Message_rect.h = 100;
-
-	SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
-
-	SDL_FreeSurface(surfaceMessage);
-	SDL_DestroyTexture(Message);
-	TTF_CloseFont(Noto);
-	
-
+    // Clean up resources
+    SDL_FreeSurface(surfaceMessage);
+    SDL_DestroyTexture(Message);
+    TTF_CloseFont(Noto);
 }
 
 void update_screen() {
