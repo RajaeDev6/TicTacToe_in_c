@@ -62,7 +62,6 @@ int main() {
     // Initialize the board state to empty
     reset_board();
 
-    SDL_Event event;
     int running = 1;
 		char cwd[1024];
 
