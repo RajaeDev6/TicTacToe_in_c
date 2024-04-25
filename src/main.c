@@ -174,7 +174,7 @@ void update_screen() {
 
             if (board[i][j] == 1) {
                 // Draw X
-                draw_x(renderer, x, y, cell_width / 2);
+                draw_x(renderer, x + 35, y + 35, cell_width / 2);
             } else if (board[i][j] == -1) {
                 // Draw O
                 draw_circle(renderer, center_x, center_y, (cell_width * 0.5) / 2);
