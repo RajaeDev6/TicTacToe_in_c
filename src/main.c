@@ -17,6 +17,16 @@ const char *PLAYER2_SYMBOL = "O";
 
 int player1_score = 0;
 int player2_score = 0;
+
+
+typedef struct {
+	int player_one;
+	int  player_two;
+}Scores;
+
+Scores players_score;
+
+
 int moves = 0;
 int board[GRID_SIZE][GRID_SIZE] = {0}; // Initialize the board as empty
 
@@ -42,8 +52,9 @@ void render_container(SDL_Renderer *renderer, const Container *container);
 void draw_board(const Container *container);
 void draw_x(SDL_Renderer *renderer, int x, int y, int size);
 void draw_circle(SDL_Renderer *renderer, int x, int y, int radius);
+void render_text(SDL_Renderer *renderer, const char *text, SDL_Color color, int x, int y);
 void render_player_turn(SDL_Renderer *renderer, const char *player_symbol);
-void show_score(SDL_Renderer *renderer, const char *player_symbol, int player_score, int x, int y);
+void show_scores(SDL_Renderer *renderer, Scores players_score);
 
 int main() {
     initialize_game();
@@ -128,11 +139,11 @@ void handle_events(int *running) {
             int winner = check_win();
             if (winner == 1) {
                 // Player 1 (X) wins
-                update_score(&player1_score);
+                update_score(&players_score.player_one);
                 reset_board(); // Reset the board after a win
             } else if (winner == -1) {
                 // Player 2 (O) wins
-                update_score(&player2_score);
+                update_score(&players_score.player_two);
                 reset_board(); // Reset the board after a win
             } else if (moves == GRID_SIZE * GRID_SIZE) {
                 // Draw condition
@@ -148,8 +159,7 @@ void update_screen() {
     SDL_RenderClear(renderer);
 
     render_container(renderer, &game_container);
-    show_score(renderer, PLAYER1_SYMBOL, player1_score, 0, WINDOW_HEIGHT / 2);
-    show_score(renderer, PLAYER2_SYMBOL, player2_score, WINDOW_WIDTH - 100, WINDOW_HEIGHT / 2);
+    show_scores(renderer, players_score);
     draw_board(&game_container);
 
     // Draw Xs and Os based on the board state
@@ -304,64 +314,20 @@ void draw_circle(SDL_Renderer *renderer, int x, int y, int radius) {
     }
 }
 
-void render_player_turn(SDL_Renderer *renderer, const char *player_symbol) {
-    TTF_Font* font = TTF_OpenFont(font_path, FONT_SIZE);
+void render_text(SDL_Renderer *renderer, const char *text, SDL_Color color,int x, int y) {
+		TTF_Font *font = TTF_OpenFont(font_path, FONT_SIZE);
     if (!font) {
         fprintf(stderr, "Failed to load font: %s\n", TTF_GetError());
         return;
     }
 
-    SDL_Color white = {255, 255, 255, 255}; // White color for text
-
-    SDL_Surface* surface_message = TTF_RenderText_Blended(font, player_symbol, white);
+		SDL_Surface *surface_message = TTF_RenderText_Blended(font, text, color);
     if (!surface_message) {
         fprintf(stderr, "Failed to render text: %s\n", TTF_GetError());
         TTF_CloseFont(font);
         return;
     }
-
-    SDL_Texture* texture_message = SDL_CreateTextureFromSurface(renderer, surface_message);
-    if (!texture_message) {
-        fprintf(stderr, "Failed to create texture: %s\n", SDL_GetError());
-        SDL_FreeSurface(surface_message);
-        TTF_CloseFont(font);
-        return;
-    }
-
-    SDL_Rect message_rect = {
-        WINDOW_WIDTH / 2 - surface_message->w / 2,
-        0,
-        surface_message->w,
-        surface_message->h
-    };
-
-    SDL_RenderCopy(renderer, texture_message, NULL, &message_rect);
-
-    SDL_FreeSurface(surface_message);
-    SDL_DestroyTexture(texture_message);
-    TTF_CloseFont(font);
-}
-
-void show_score(SDL_Renderer *renderer, const char *player_symbol, int player_score, int x, int y) {
-    char score_text[50];
-    snprintf(score_text, sizeof(score_text), "%s: %d", player_symbol, player_score);
-
-    TTF_Font* font = TTF_OpenFont(font_path, FONT_SIZE);
-    if (!font) {
-        fprintf(stderr, "Failed to load font: %s\n", TTF_GetError());
-        return;
-    }
-
-    SDL_Color white = {255, 255, 255, 255}; // White color for text
-
-    SDL_Surface* surface_message = TTF_RenderText_Blended(font, score_text, white);
-    if (!surface_message) {
-        fprintf(stderr, "Failed to render text: %s\n", TTF_GetError());
-        TTF_CloseFont(font);
-        return;
-    }
-
-    SDL_Texture* texture_message = SDL_CreateTextureFromSurface(renderer, surface_message);
+		SDL_Texture *texture_message = SDL_CreateTextureFromSurface(renderer, surface_message);
     if (!texture_message) {
         fprintf(stderr, "Failed to create texture: %s\n", SDL_GetError());
         SDL_FreeSurface(surface_message);
@@ -382,3 +348,27 @@ void show_score(SDL_Renderer *renderer, const char *player_symbol, int player_sc
     SDL_DestroyTexture(texture_message);
     TTF_CloseFont(font);
 }
+
+
+void render_player_turn(SDL_Renderer *renderer, const char *player_symbol) {
+		SDL_Color white = {0,255,0,255};
+    render_text(renderer, player_symbol,white, WINDOW_WIDTH / 2, 0);
+}
+
+void show_scores(SDL_Renderer *renderer, Scores players_score) {
+    char score_text1[50];
+    char score_text2[50];
+		int player1_x = 0;
+		int player1_y = WINDOW_HEIGHT / 2;
+		int player2_y = WINDOW_HEIGHT / 2;
+		int player2_x = WINDOW_WIDTH - 100;
+    
+    snprintf(score_text1, sizeof(score_text1), "%s: %d", PLAYER1_SYMBOL, players_score.player_one);
+    snprintf(score_text2, sizeof(score_text2), "%s: %d", PLAYER2_SYMBOL, players_score.player_two);
+    
+		SDL_Color white = {255,255,255,255};
+    
+    render_text(renderer, score_text1, white, player1_x, player1_y);
+    render_text(renderer, score_text2, white, player2_x, player2_y);
+}
+
